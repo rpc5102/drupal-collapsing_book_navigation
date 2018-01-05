@@ -16,11 +16,33 @@
     <script src="tree.js"></script>
 </head>
 <body>
+    <!--<ul id="sample">
+        <li class="collapse show"><a data-toggle="collapse" href="#l2">Welcome to SANDBOX</a>
+            <ul id="l2" class="collapse">
+                <li><a data-toggle="collapse" href="#l3">Lesson 0: Prerequisite Skills</a>
+                    <ul id="l3" class="collapse">
+                        <li><a data-toggle="collapse" href="#l4">0.1 - Review of Algebra</a>
+                            <ul id="l4" class="collapse">
+                                <li>0.1.1 - Order of Operations</li>
+                                <li>0.1.2 - Summations</li>
+                                <li>0.1.3 - Factorials & Combinations</li>
+                                <li>0.1.4 - Basic Linear Equations</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>-->
     <ul id="tree"></ul>
 </body>
 <script>
+    let depth = 1;
+    let markup = '';
+
     $(document).ready(function () {
         print_node(tree);
+        $('#tree').append(markup);
     });
 
     function print_node(node){
@@ -30,14 +52,24 @@
     }
 
     function print_key(node, key){
-        console.log(node[key]);
         if(key == 'link'){
-            //console.log(node[key]);
-            if(node[key].has_children == "1"){
-                $('#tree').append("<li>+ " + node[key].title + "</li>");
-            } else {
-                $('#tree').append("<li>" + node[key].title + "</li>");
+            let current_depth = node[key].depth;
+            let has_children = node[key].has_children;
+            let active = node[key].in_active_trail;
+            let title = active ? "<b>" + node[key].title + "</b>" : node[key].title;
+
+            if(current_depth < depth){
+                markup += "</ul>".repeat(depth - current_depth);
             }
+
+            markup += "<li>" + title + "</li>";
+
+            if (has_children == "1") {
+                markup += "<ul>";
+            }
+
+            depth = current_depth;
+
         } else {
             print_node(node[key]);
         }
