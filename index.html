@@ -56,6 +56,8 @@
             let current_depth = node[key].depth;
             let has_children = node[key].has_children;
             let active = node[key].in_active_trail;
+            let expanded = active ? 'show' : '';
+
             let title = active ? "<b>" + node[key].title + "</b>" : node[key].title;
 
             if(current_depth < depth){
@@ -65,7 +67,7 @@
             markup += "<li>" + title + "</li>";
 
             if (has_children == "1") {
-                markup += "<ul>";
+                markup += "<ul class='collapse "+expanded+"'>";
             }
 
             depth = current_depth;
