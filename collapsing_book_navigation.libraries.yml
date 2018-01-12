@@ -1,0 +1,9 @@
+collapse:
+  version: VERSION
+  js:
+    js/collapse.js:  {}
+  css:
+    theme:
+      css/collapse.css: {}
+  dependencies:
+    - core/jquery
