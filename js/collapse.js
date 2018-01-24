@@ -3,11 +3,11 @@
  * Collapsing Book Tree block behaviors.
  */
 
-(function($, Drupal) {
+(function ($, Drupal) {
   "use strict";
   var nid = drupalSettings.path.currentPath.replace(/node\//, "");
 
-  $(document).ready(function() {
+  $(document).ready(function () {
     var active = $('li[data-id="' + nid + '"]');
 
     /* Keyboard navigation
@@ -31,7 +31,8 @@
     $(active)
       .children(".toggle-icon")
       .first()
-      .toggleClass("fa-caret-down fa-caret-right");
+      .find("[data-fa-processed]")
+      .toggleClass("fa-caret-down");
 
     /* Expand first list under active page */
     $(active)
@@ -70,14 +71,19 @@
         var icon = $(parents[i])
           .find(".toggle-icon")
           .first();
-        $(icon).removeClass("fa-caret-right");
-        $(icon).addClass("fa-caret-down");
+
+        $(icon)
+          .find("[data-fa-processed]")
+          .toggleClass("fa-caret-down")
+          .toggleClass("fa-caret-right");
       }
     }
 
-    $(".block-collapsing-book-navigation .toggle-icon").on("click", function() {
-      $(this).toggleClass("fa-caret-down");
-      $(this).toggleClass("fa-caret-right");
+    $(".block-collapsing-book-navigation .toggle-icon").on("click", function () {
+      $(this)
+        .find("[data-fa-processed]")
+        .toggleClass("fa-caret-down")
+        .toggleClass("fa-caret-right");
     });
   });
 })(jQuery, Drupal);

@@ -44,3 +44,17 @@
 .block-collapsing-book-navigation .nav-list {
     margin-left: -1.5rem;
 }
+
+.toggle-icon.collapsed {
+    display: inline;
+    opacity: 1;
+    margin-left: 0;
+}
+
+@media (min-width: 992px){
+    .toggle-icon.collapsed {
+        display: inline;
+        opacity: 1;
+        margin-left: 0;
+    }
+}
