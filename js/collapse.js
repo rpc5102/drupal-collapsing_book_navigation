@@ -3,12 +3,10 @@
  * Collapsing Book Tree block behaviors.
  */
 
-(function ($, Drupal) {
+(function($, Drupal) {
   "use strict";
-  var nid = drupalSettings.path.currentPath.replace(/node\//, "");
 
-  $(document).ready(function () {
-    var active = $('li[data-id="' + nid + '"]');
+  document.addEventListener('DOMContentLoaded', function () {
 
     /* Keyboard navigation
     $(".block-collapsing-book-navigation").on("keydown", function(e) {
@@ -23,6 +21,23 @@
     });
     */
 
+    /* @TODO: Count number of tree items and listen for how many get rendered by FontAwesome; trigger when done with active item */
+    setTimeout(function() {
+      expand_active_tree();  
+
+      $(".block-collapsing-book-navigation .toggle-icon").on("click", function() {
+        $(this)
+          .find(".svg-inline--fa")
+          .toggleClass("fa-caret-down")
+          .toggleClass("fa-caret-right");
+      });
+    }, 200); 
+  });
+
+  function expand_active_tree(){
+    var nid = drupalSettings.path.currentPath.replace(/node\//, "");
+    var active = document.querySelectorAll('li[data-id="' + nid + '"]');
+
     $(active)
       .children(".nav-link")
       .first()
@@ -31,41 +46,21 @@
     $(active)
       .children(".toggle-icon")
       .first()
-      .find("[data-fa-processed]")
+      .find(".svg-inline--fa")
       .toggleClass("fa-caret-down");
 
     /* Expand first list under active page */
     $(active)
-      .children("ul")
+      .children("ol")
       .first()
       .addClass("show");
 
-    /*
-    $(".block-collapsing-book-navigation .nav-link")
-      .mouseenter(function() {
-        var icon = $(this)
-          .prev(".icon")
-          .first();
-        $(icon).data("class", $(icon).attr("class"));
-        $(icon).removeClass("fa-caret-right");
-        $(icon).removeClass("fa-caret-down");
-        $(icon).removeClass("fa-circle-o");
-        $(icon).addClass("fa-chevron-right");
-      })
-      .mouseleave(function() {
-        var icon = $(this)
-          .prev(".icon")
-          .first();
-        $(icon).attr("class", $(icon).data("class"));
-      });
-      */
-
     /* Traverse tree until at the top; select list elements along the way. */
-    var parents = $(active).parentsUntil("ul.nav");
+    var parents = $(active).parentsUntil("ol.nav");
 
     /* For each parent list, add the 'show' class to expand it. */
     for (var i = 0; i < parents.length; i++) {
-      if ($(parents[i]).is("ul")) {
+      if ($(parents[i]).is("ol")) {
         $(parents[i]).addClass("show");
       } else {
         var icon = $(parents[i])
@@ -73,17 +68,10 @@
           .first();
 
         $(icon)
-          .find("[data-fa-processed]")
+          .find(".svg-inline--fa")
           .toggleClass("fa-caret-down")
           .toggleClass("fa-caret-right");
       }
-    }
-
-    $(".block-collapsing-book-navigation .toggle-icon").on("click", function () {
-      $(this)
-        .find("[data-fa-processed]")
-        .toggleClass("fa-caret-down")
-        .toggleClass("fa-caret-right");
-    });
-  });
+    } 
+  }
 })(jQuery, Drupal);
