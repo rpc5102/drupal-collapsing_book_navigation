@@ -4,6 +4,7 @@ namespace Drupal\collapsing_book_navigation\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\book\Plugin\Block\BookNavigationBlock;
 use Drupal\Core\Cache\Cache;
+use Drupal\Component\Utility\SortArray;
 
   /**
    * Provides a 'Book navigation' block.
@@ -30,7 +31,9 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
     }
 
     if ($this->configuration['block_mode'] == 'all pages') {
-      foreach ($this->bookManager->getAllBooks() as $book_id => $book) {
+      $books = $this->bookManager->getAllBooks();
+      uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
+      foreach ($books as $book_id => $book) {
           $this->buildBookTree($book);
       }
     } elseif ($current_bid) {
@@ -55,7 +58,13 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
 
             $this->markup .= '<ul id="book-'.$book['nid'].'" class="nav">';
             $this->bookTreeOutput($tree);
-            $this->markup .= '</ul></ul>';
+
+            if($this->depth > 1){
+              $this->markup .= str_repeat("</ul></li>", $this->depth - 1);
+            }
+
+            $this->markup .= '</ul>';
+
             $this->depth = 1;
         }
     }
