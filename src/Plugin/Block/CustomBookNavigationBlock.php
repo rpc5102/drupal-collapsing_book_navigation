@@ -53,9 +53,9 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
         if($access){
             $tree = $this->bookManager->bookTreeAllData($book['nid']);
 
-            $this->markup .= '<ol id="book-'.$book['nid'].'" class="nav">';
+            $this->markup .= '<ul id="book-'.$book['nid'].'" class="nav">';
             $this->bookTreeOutput($tree);
-            $this->markup .= '</ol></ol>';
+            $this->markup .= '</ul></ul>';
             $this->depth = 1;
         }
     }
@@ -81,7 +81,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
             /* Check if we've moved up any levels; close tags if needed. */
             if($current_depth < $this->depth){
                 $this->markup .= "</li>";
-                $this->markup .= str_repeat("</ol>", $this->depth - $current_depth);
+                $this->markup .= str_repeat("</ul>", $this->depth - $current_depth);
             }
 
             $this->markup .= "<li class='nav-item' data-id='".$nid."'>";
@@ -97,7 +97,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
 
             /* If this node has children we need to also put a list inside the current list element. */
             if ($has_children) {
-                $this->markup .= "<ol id='nav-trail-".$nid."' class='nav-list collapse' >";
+                $this->markup .= "<ul id='nav-trail-".$nid."' class='nav-list collapse' >";
             } else {
                 $this->markup .= "</li>";
             }
