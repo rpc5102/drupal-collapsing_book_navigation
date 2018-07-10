@@ -1,5 +1,5 @@
 {
-  "name": "rpc5102/book-tree-collapse",
+  "name": "rpc5102/collapsing_book_navigation",
   "description": "Converts standard book navigation to js collapsing tree",
   "type": "drupal-module",
   "keywords": [
@@ -7,14 +7,12 @@
     "Book",
     "Navigation"
   ],
-  "homepage": "https://git.psu.edu/rpc5102/book-tree-collapse.git",
+  "homepage": "https://git.psu.edu/rpc5102/collapsing_book_navigation.git",
   "license": "ISC",
   "authors": [
     {
       "name": "ROBERT PATRICK CAREY III",
-      "email": "rpc5102@psu.edu",
-      "homepage": "http://stat.psu.edu/people/rpc5102",
-      "role": "Programmer / Analyst"
+      "email": "rpc5102@psu.edu"
     }
   ],
   "require": {
