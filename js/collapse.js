@@ -51,16 +51,16 @@
 
     /* Expand first list under active page */
     $(active)
-      .children("ol")
+      .children("ul")
       .first()
       .addClass("show");
 
     /* Traverse tree until at the top; select list elements along the way. */
-    var parents = $(active).parentsUntil("ol.nav");
+    var parents = $(active).parentsUntil("ul.nav");
 
     /* For each parent list, add the 'show' class to expand it. */
     for (var i = 0; i < parents.length; i++) {
-      if ($(parents[i]).is("ol")) {
+      if ($(parents[i]).is("ul")) {
         $(parents[i]).addClass("show");
       } else {
         var icon = $(parents[i])
