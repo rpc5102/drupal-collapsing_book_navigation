@@ -1,7 +1,7 @@
 {
   "name": "rpc5102/collapsing_book_navigation",
   "description": "Converts standard book navigation to js collapsing tree",
-  "type": "drupal-module",
+  "type": "drupal-custom-module",
   "keywords": [
     "Drupal 8",
     "Book",
