@@ -1,0 +1,5 @@
+allowed_types:
+  - book
+block:
+  navigation:
+    books_displayed: 'all books'

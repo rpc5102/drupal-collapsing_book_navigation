@@ -6,15 +6,23 @@ use Drupal\book\Plugin\Block\BookNavigationBlock;
 use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\SortArray;
 
-  /**
-   * Provides a 'Book navigation' block.
-   *
-   * @Block(
-   *   id = "custom_book_navigation",
-   *   admin_label = @Translation("Book navigation - Customized"),
-   *   category = @Translation("Menus")
-   * )
-   */
+use Drupal\book\BookManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\node\NodeInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\Entity\EntityStorageInterface;
+
+/**
+ * Provides a 'Book navigation' block.
+ *
+ * @Block(
+ *   id = "custom_book_navigation",
+ *   admin_label = @Translation("Book navigation - Customized"),
+ *   category = @Translation("Menus")
+ * )
+ */
 class CustomBookNavigationBlock extends BookNavigationBlock {
 
   /**
@@ -22,6 +30,74 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
    */
   private $depth = 1;
   private $markup = '';
+
+   /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration() {
+    return [
+      'block_mode' => "all pages",
+      'books_displayed' => "all books",
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockForm($form, FormStateInterface $form_state) {
+
+    ## Form Part 1 - Page Selection ##
+    $options = [
+      'all pages' => $this->t('Show block on all pages'),
+      'book pages' => $this->t('Show block only on book pages'),
+    ];
+
+    $form['book_block_mode'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Book navigation block display'),
+      '#options' => $options,
+      '#default_value' => $this->configuration['block_mode'],
+      '#description' => $this->t("If <em>Show block on all pages</em> is selected, the block will contain the automatically generated menus for all of the site's books. If <em>Show block only on book pages</em> is selected, the block will contain only the one menu corresponding to the current page's book. In this case, if the current page is not in a book, no block will be displayed. The <em>Page specific visibility settings</em> or other visibility settings can be used in addition to selectively display this block."),
+    ];
+
+    ## Form Part 2 - Book Selection ##
+
+    # @todo: add a way to handle lots of list choices
+    unset($options);
+
+    foreach ($this->bookManager->getAllBooks() as $book_id => $book) {
+        $options[$book_id] = $this->t($book['title']);
+    }
+
+    $config =  $this->configuration['books_displayed'];
+    
+    $defaults = $config === 'all books' ? array_keys($options) : array_keys($config);
+
+    $form['books_displayed'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Books to be displayed in this block'),
+      '#options' => $options,
+      '#default_value' => $defaults,
+      '#description' => $this->t("By default, all books will be added to this menu, otherwise, only the books selected will be displayed."),
+      ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockSubmit($form, FormStateInterface $form_state) {
+    $this->configuration['block_mode'] = $form_state->getValue('book_block_mode');
+
+    foreach($form_state->getValue('books_displayed') as $key => $value){
+        if($value !== 0){
+            $config[$key] = 1;
+        }
+    }
+
+    $this->configuration['books_displayed'] = $config;
+  }
 
   public function build() {
     $current_bid = 0;
@@ -32,7 +108,17 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
 
     if ($this->configuration['block_mode'] == 'all pages') {
       $books = $this->bookManager->getAllBooks();
+
+      $books_to_display = $this->configuration['books_displayed'];
+        
+      foreach($books as $bid => $book){
+          if(array_search($bid, $books_to_display) !== false){
+            unset($books[$bid]);
+          }
+      }
+      
       uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
+
       foreach ($books as $book_id => $book) {
           $this->buildBookTree($book);
       }
@@ -50,7 +136,6 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
     private function buildBookTree($book){
         $access = \Drupal::entityQuery('node')
                     ->condition('nid', $book['nid'], '=')
-                    ->condition('status', NODE_PUBLISHED)
                     ->execute();
 
         if($access){
