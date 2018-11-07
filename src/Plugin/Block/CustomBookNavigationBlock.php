@@ -1,18 +1,13 @@
 <?php
 namespace Drupal\collapsing_book_navigation\Plugin\Block;
 
-use Drupal\Core\Block\BlockBase;
+use Drupal\book\BookManagerInterface;
 use Drupal\book\Plugin\Block\BookNavigationBlock;
+use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\SortArray;
 
-use Drupal\book\BookManagerInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\node\NodeInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * Provides a 'Book navigation' block.
@@ -40,11 +35,13 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
       'books_displayed' => "all books",
     ];
   }
-
+  
   /**
    * {@inheritdoc}
    */
   public function blockForm($form, FormStateInterface $form_state) {
+
+    $form['#attached']['library'][] = 'collapsing_book_navigation/form-actions';
 
     ## Form Part 1 - Page Selection ##
     $options = [
@@ -65,21 +62,44 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
     # @todo: add a way to handle lots of list choices
     unset($options);
 
-    foreach ($this->bookManager->getAllBooks() as $book_id => $book) {
+    $books = $this->bookManager->getAllBooks();
+
+    uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
+
+    foreach ($books as $book_id => $book) {
         $options[$book_id] = $this->t($book['title']);
     }
 
     $config =  $this->configuration['books_displayed'];
-    
-    $defaults = $config === 'all books' ? array_keys($options) : array_keys($config);
+
+    /* Check if default config is set or null (existing module), if so, display all books; else display selected books. */
+    $defaults = ($config === 'all books' || $config === null) ? array_keys($options) : array_keys($config);
 
     $form['books_displayed'] = [
+        '#type' => 'details',
+        '#title' => $this->t('Book Selection')
+    ];
+
+    $form['books_displayed']['selection'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Books to be displayed in this block'),
       '#options' => $options,
       '#default_value' => $defaults,
-      '#description' => $this->t("By default, all books will be added to this menu, otherwise, only the books selected will be displayed."),
-      ];
+      '#description' => $this->t("By default, all books will be added to this menu; otherwise, only the books selected will be displayed."),
+    ];
+
+    $form['books_displayed']['select_all_books'] = [
+        '#type' => 'button',
+        '#value' => $this->t('Select All'),
+    ];
+
+    $form['books_displayed']['deselect_all_books'] = [
+        '#type' => 'button',
+        '#value' => $this->t('Deselect All'),
+        '#attributes' => [
+            'onclick' => 'return false;'
+        ]
+    ];
 
     return $form;
   }
@@ -110,17 +130,21 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
       $books = $this->bookManager->getAllBooks();
 
       $books_to_display = $this->configuration['books_displayed'];
+     
+      if(!$books_to_display){
+          return;
+      } else {
+        foreach($books as $bid => $book){
+            if(array_search($bid, array_keys($books_to_display)) === false){
+                unset($books[$bid]);
+            }
+        }
         
-      foreach($books as $bid => $book){
-          if(array_search($bid, $books_to_display) !== false){
-            unset($books[$bid]);
-          }
-      }
-      
-      uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
+        uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
 
-      foreach ($books as $book_id => $book) {
-          $this->buildBookTree($book);
+        foreach ($books as $book_id => $book) {
+            $this->buildBookTree($book);
+        }
       }
     } elseif ($current_bid) {
       $this->buildBookTree($book);

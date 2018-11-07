@@ -7,3 +7,13 @@ collapse:
       css/collapse.css: {}
   dependencies:
     - core/jquery
+
+form-actions:
+  version: VERSION
+  js:
+    js/form-actions.js:  {}
+  css:
+    component:
+      css/form-actions.css: {}
+  dependencies:
+    - core/jquery
