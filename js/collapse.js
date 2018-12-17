@@ -72,7 +72,7 @@
           .toggleClass("fa-caret-down")
           .toggleClass("fa-caret-right");
 
-        $(icon).first().setAttribute("aria-expanded", true);
+        $(icon)[0].setAttribute("aria-expanded", true);
       }
     } 
   }
