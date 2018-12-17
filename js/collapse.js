@@ -71,6 +71,8 @@
           .find(".svg-inline--fa")
           .toggleClass("fa-caret-down")
           .toggleClass("fa-caret-right");
+
+        $(icon).setAttribute("aria-expanded", true);
       }
     } 
   }

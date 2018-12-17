@@ -8,6 +8,9 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\SortArray;
 
+/* FOR TESTING ONLY */
+use Drupal\Core\Logger\RfcLoggerTrait;
+use Psr\Log\LoggerInterface;
 
 /**
  * Provides a 'Book navigation' block.
@@ -58,10 +61,11 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
     ];
 
     ## Form Part 2 - Book Selection ##
-
     # @todo: add a way to handle lots of list choices
+    
     unset($options);
 
+    /* Build a list of books by weights */
     $books = $this->bookManager->getAllBooks();
 
     uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
@@ -70,6 +74,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
         $options[$book_id] = $this->t($book['title']);
     }
 
+    /* Get config */
     $config =  $this->configuration['books_displayed'];
 
     /* Check if default config is set or null (existing module), if so, display all books; else display selected books. */
@@ -108,14 +113,22 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
    * {@inheritdoc}
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
-    $this->configuration['block_mode'] = $form_state->getValue('book_block_mode');
+    $config = [];
 
-    foreach($form_state->getValue('books_displayed') as $key => $value){
-        if($value !== 0){
-            $config[$key] = 1;
+    $books_to_display = $form_state->getValue('books_displayed');
+
+    if(isset($books_to_display['selection'])){
+        foreach($books_to_display['selection'] as $key => $value){
+            if($value !== 0){
+                $config[$key] = 1;
+            }
         }
     }
 
+    /* Set passed form value block page display mode */
+    $this->configuration['block_mode'] = $form_state->getValue('book_block_mode');
+
+    /* Set book selection to { } or list of book ids */
     $this->configuration['books_displayed'] = $config;
   }
 
@@ -206,7 +219,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
 
             /* If this node has children then we need to print the icon to expand/collapse list. */
             if($has_children){
-                $this->markup .= "<a data-toggle='collapse' href='#nav-trail-".$nid."' class='toggle-icon'><i class='icon fa fa-fw fa-caret-right' aria-hidden='true'></i></a>";
+                $this->markup .= "<a data-toggle='collapse' role='button' aria-expanded='false' aria-controls='nav-trail-".$nid."' href='#nav-trail-".$nid."' class='toggle-icon'><i class='icon fa fa-fw fa-caret-right' aria-hidden='true'></i></a>";
             } else {
                 $this->markup .= "<i class='far fa-fw fa-circle icon' aria-hidden='true' data-fa-transform='shrink-9'></i>";
             }
