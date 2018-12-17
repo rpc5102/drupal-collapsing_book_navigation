@@ -219,7 +219,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
 
             /* If this node has children then we need to print the icon to expand/collapse list. */
             if($has_children){
-                $this->markup .= "<a data-toggle='collapse' role='button' aria-expanded='false' aria-controls='nav-trail-".$nid."' href='#nav-trail-".$nid."' class='toggle-icon'><i class='icon fa fa-fw fa-caret-right' aria-hidden='true'></i></a>";
+                $this->markup .= "<a data-toggle='collapse' role='button' aria-expanded='false' aria-controls='nav-trail-".$nid."' href='#nav-trail-".$nid."' class='toggle-icon' value='Toggle list items'><i class='icon fa fa-fw fa-caret-right' aria-hidden='true'></i></a>";
             } else {
                 $this->markup .= "<i class='far fa-fw fa-circle icon' aria-hidden='true' data-fa-transform='shrink-9'></i>";
             }
