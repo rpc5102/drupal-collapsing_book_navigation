@@ -1,21 +1,22 @@
 {
-  "name": "rpc5102/collapsing_book_navigation",
-  "description": "Converts standard book navigation to js collapsing tree",
-  "type": "drupal-custom-module",
+  "name": "rpc5102/drupal-collapsing_book_navigation",
+  "description": "Converts standard Drupal 8 book navigation to a collapsable JS tree.",
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
   "keywords": [
     "Drupal 8",
     "Book",
     "Navigation"
   ],
   "homepage": "https://git.psu.edu/rpc5102/collapsing_book_navigation.git",
-  "license": "ISC",
   "authors": [
     {
       "name": "ROBERT PATRICK CAREY III",
-      "email": "rpc5102@psu.edu"
+      "homepage": "https://www.drupal.org/u/rpc5102",
+      "role": "Maintainer"
     }
   ],
   "require": {
-    "drupal/core": "~8.5"
+    "drupal/core": "^8.5"
   }
 }
