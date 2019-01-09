@@ -1,6 +1,7 @@
 {
   "name": "rpc5102/drupal-collapsing_book_navigation",
   "description": "Converts standard Drupal 8 book navigation to a collapsable JS tree.",
+  "type": "drupal-module",
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
   "keywords": [
