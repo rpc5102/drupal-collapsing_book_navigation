@@ -7,6 +7,9 @@ Converts the standard page-rendered **Book Navigation** block into a fully colla
 ### Goals
 Provide users with a method to easily traverse large/complex book structures.
 
+### Requirements
+During development, this module will require the use of [FontAwesome](https://fontawesome.com/) for icons and [Bootstrap Collapse](https://getbootstrap.com/docs/4.3/components/collapse/) for toggle states.
+
 ### Installation
 - **Option 1**. Using [Drush](https://github.com/drush-ops/drush#readme)
   ```$ drush en collapsing_book_navigation```
