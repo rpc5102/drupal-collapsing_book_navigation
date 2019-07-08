@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - collapsing_book_navigation
+id: booknavigationcustomized
+region: sidebar_first
+weight: 0
+provider: null
+plugin: custom_book_navigation
+settings:
+  id: custom_book_navigation
+  label: 'Book navigation - Customized'
+  provider: collapsing_book_navigation
+  label_display: visible
+  block_mode: 'all pages'
+  books_displayed: 'all books'
+visibility: {  }

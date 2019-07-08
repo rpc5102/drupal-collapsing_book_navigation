@@ -1,8 +1,13 @@
 <?php
 
 /**
+ * @file
+ * Allows users to customize book block menus.
+ */
+
+/**
  * Implements hook_page_attachments().
  */
 function collapsing_book_navigation_page_attachments(array &$attachments) {
-    $attachments['#attached']['library'][] = 'collapsing_book_navigation/collapse';
+  $attachments['#attached']['library'][] = 'collapsing_book_navigation/collapse';
 }

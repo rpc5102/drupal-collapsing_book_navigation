@@ -1,16 +1,10 @@
 <?php
+
 namespace Drupal\collapsing_book_navigation\Plugin\Block;
 
-use Drupal\book\BookManagerInterface;
 use Drupal\book\Plugin\Block\BookNavigationBlock;
-use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\SortArray;
-
-/* FOR TESTING ONLY */
-use Drupal\Core\Logger\RfcLoggerTrait;
-use Psr\Log\LoggerInterface;
 
 /**
  * Provides a 'Book navigation' block.
@@ -24,12 +18,20 @@ use Psr\Log\LoggerInterface;
 class CustomBookNavigationBlock extends BookNavigationBlock {
 
   /**
-   * {@inheritdoc}
+   * Book tree depth.
+   *
+   * @var int
    */
   private $depth = 1;
+
+  /**
+   * Block #markup render string.
+   *
+   * @var string
+   */
   private $markup = '';
 
-   /**
+  /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
@@ -38,7 +40,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
       'books_displayed' => "all books",
     ];
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -46,7 +48,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
 
     $form['#attached']['library'][] = 'collapsing_book_navigation/form-actions';
 
-    ## Form Part 1 - Page Selection ##
+    /* Form Part 1 - Page Selection */
     $options = [
       'all pages' => $this->t('Show block on all pages'),
       'book pages' => $this->t('Show block only on book pages'),
@@ -60,29 +62,29 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
       '#description' => $this->t("If <em>Show block on all pages</em> is selected, the block will contain the automatically generated menus for all of the site's books. If <em>Show block only on book pages</em> is selected, the block will contain only the one menu corresponding to the current page's book. In this case, if the current page is not in a book, no block will be displayed. The <em>Page specific visibility settings</em> or other visibility settings can be used in addition to selectively display this block."),
     ];
 
-    ## Form Part 2 - Book Selection ##
-    # @todo: add a way to handle lots of list choices
-    
+    /* Form Part 2 - Book Selection */
+    // @todo: add a way to handle lots of list choices
+
     unset($options);
 
     /* Build a list of books by weights */
     $books = $this->bookManager->getAllBooks();
 
-    uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
+    uasort($books, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
 
     foreach ($books as $book_id => $book) {
-        $options[$book_id] = $this->t($book['title']);
+      $options[$book_id] = $this->t('@title', ['@title' => $book['title']]);
     }
 
     /* Get config */
     $config =  $this->configuration['books_displayed'];
 
     /* Check if default config is set or null (existing module), if so, display all books; else display selected books. */
-    $defaults = ($config === 'all books' || $config === null) ? array_keys($options) : array_keys($config);
+    $defaults = ($config === 'all books' || $config === NULL) ? array_keys($options) : array_keys($config);
 
     $form['books_displayed'] = [
-        '#type' => 'details',
-        '#title' => $this->t('Book Selection')
+      '#type' => 'details',
+      '#title' => $this->t('Book Selection'),
     ];
 
     $form['books_displayed']['selection'] = [
@@ -94,16 +96,16 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
     ];
 
     $form['books_displayed']['select_all_books'] = [
-        '#type' => 'button',
-        '#value' => $this->t('Select All'),
+      '#type' => 'button',
+      '#value' => $this->t('Select All'),
     ];
 
     $form['books_displayed']['deselect_all_books'] = [
-        '#type' => 'button',
-        '#value' => $this->t('Deselect All'),
-        '#attributes' => [
-            'onclick' => 'return false;'
-        ]
+      '#type' => 'button',
+      '#value' => $this->t('Deselect All'),
+      '#attributes' => [
+        'onclick' => 'return false;'
+      ],
     ];
 
     return $form;
@@ -117,12 +119,12 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
 
     $books_to_display = $form_state->getValue('books_displayed');
 
-    if(isset($books_to_display['selection'])){
-        foreach($books_to_display['selection'] as $key => $value){
-            if($value !== 0){
-                $config[$key] = 1;
-            }
+    if (isset($books_to_display['selection'])) {
+      foreach ($books_to_display['selection'] as $key => $value) {
+        if ($value !== 0) {
+          $config[$key] = 1;
         }
+      }
     }
 
     /* Set passed form value block page display mode */
@@ -132,115 +134,154 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
     $this->configuration['books_displayed'] = $config;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function build() {
     $current_bid = 0;
+
+    $block_mode = $this->configuration['block_mode'];
 
     if ($node = $this->requestStack->getCurrentRequest()->get('node')) {
       $current_bid = empty($node->book['bid']) ? 0 : $node->book['bid'];
     }
 
-    if ($this->configuration['block_mode'] == 'all pages') {
+    /*
+     * Display block if:
+     *  mode set to 'all pages' or
+     *  mode set to 'book pages' with the current node being part of a book.
+     */
+    if ($block_mode === 'all pages' || ($block_mode === 'book pages' && $current_bid)) {
       $books = $this->bookManager->getAllBooks();
 
       $books_to_display = $this->configuration['books_displayed'];
-     
-      if(!$books_to_display){
-          return;
-      } else {
-        foreach($books as $bid => $book){
-            if(array_search($bid, array_keys($books_to_display)) === false){
-                unset($books[$bid]);
-            }
-        }
-        
-        uasort($books, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
 
-        foreach ($books as $book_id => $book) {
-            $this->buildBookTree($book);
+      if ($books_to_display === 'all books') {
+        $books_to_display = $books;
+      }
+
+      if (!$books_to_display) {
+        return;
+      }
+      elseif (gettype($books_to_display) === 'array') {
+        foreach ($books as $bid => $book) {
+          if (array_search($bid, array_keys($books_to_display)) === FALSE) {
+            unset($books[$bid]);
+          }
+        }
+
+        uasort($books, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+
+        foreach ($books as $book) {
+          $this->buildBookTree($book);
         }
       }
-    } elseif ($current_bid) {
-      $this->buildBookTree($book);
     }
-    return array(
+    return [
       '#markup' => $this->markup,
-      '#cache' => array(
+      '#cache' => [
         'contexts' => $this->getCacheContexts(),
-      )
-    );
+      ],
+    ];
   }
 
-    private function buildBookTree($book){
-        $access = \Drupal::entityQuery('node')
-                    ->condition('nid', $book['nid'], '=')
-                    ->execute();
+  /**
+   * Builds #markup render string for provided book link.
+   *
+   * @param array $link
+   *   A book link.
+   */
+  private function buildBookTree(array $link) {
+    $access = \Drupal::entityQuery('node')
+      ->condition('nid', $link['nid'], '=')
+      ->execute();
 
-        if($access){
-            $tree = $this->bookManager->bookTreeAllData($book['nid']);
+    if ($access) {
+      $tree = $this->bookManager->bookTreeAllData($link['nid']);
 
-            $this->markup .= '<ul id="book-'.$book['nid'].'" class="nav">';
-            $this->bookTreeOutput($tree);
+      $this->markup .= '<ul id="book-' . $link['nid'] . '" class="nav">';
+      $this->bookTreeOutput($tree);
 
-            if($this->depth > 1){
-              $this->markup .= str_repeat("</ul></li>", $this->depth - 1);
-            }
+      if ($this->depth > 1) {
+        $this->markup .= str_repeat("</ul></li>", $this->depth - 1);
+      }
 
-            $this->markup .= '</ul>';
+      $this->markup .= '</ul>';
 
-            $this->depth = 1;
-        }
+      $this->depth = 1;
     }
+  }
 
-    private function bookTreeOutput($node){
-        foreach ($node as $key => $value) {
-            $this->bookNodeOutput($node, $key);
-        }
+  /**
+   * Iterates through book tree to find and render all leaves.
+   *
+   * @param array $tree
+   *   A tree of menu links.
+   */
+  private function bookTreeOutput(array $tree) {
+    foreach ($tree as $key => $value) {
+      $this->bookNodeOutput($tree, $key);
     }
+  }
 
-    private function bookNodeOutput($node, $key){
-        /* Check if current key is a link, otherwise, go deeper [below]. */
-        if($key == "link"){
-            $current_depth = $node[$key]['depth'];
-            $has_children = $node[$key]['has_children'];
-            $title = $node[$key]['title'];
-            $nid = $node[$key]['nid'];
-            $active = $node[$key]['in_active_trail'];
+  /**
+   * Provides render string for subtree items.
+   *
+   * @param array $tree
+   *   A tree of menu links.
+   * @param string|int $key
+   *   Current subtree index.
+   */
+  private function bookNodeOutput(array $tree, $key) {
+    /* Check if current key is a link, otherwise, go deeper [below]. */
+    if ($key == "link") {
+      $current_depth = $tree[$key]['depth'];
+      $has_children = $tree[$key]['has_children'];
+      $title = $tree[$key]['title'];
+      $nid = $tree[$key]['nid'];
+      $active = $tree[$key]['in_active_trail'];
 
-            /* Get link for current item. */
-            $href = rtrim(base_path(),'/').\Drupal::service('path.alias_manager')->getAliasByPath('/node/'.$nid);
+      /* Get link for current item. */
+      $href = rtrim(base_path(), '/') . \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $nid);
 
-            /* Check if we've moved up any levels; close tags if needed. */
-            if($current_depth < $this->depth){
-                $this->markup .= "</li>";
-                $this->markup .= str_repeat("</ul>", $this->depth - $current_depth);
-            }
+      /* Check if we've moved up any levels; close tags if needed. */
+      if ($current_depth < $this->depth) {
+        $this->markup .= "</li>";
+        $this->markup .= str_repeat("</ul>", $this->depth - $current_depth);
+      }
 
-            $this->markup .= "<li class='nav-item' data-id='".$nid."'>";
+      $this->markup .= "<li class='nav-item' data-id='" . $nid . "'>";
 
-            /* If this node has children then we need to print the icon to expand/collapse list. */
-            if($has_children){
-                $this->markup .= "<a data-toggle='collapse' role='button' aria-expanded='false' aria-controls='nav-trail-".$nid."' href='#nav-trail-".$nid."' class='toggle-icon'><span class='sr-only'>Toggle list items.</span><i class='icon fa fa-fw fa-caret-right' aria-hidden='true'></i></a>";
-            } else {
-                $this->markup .= "<i class='far fa-fw fa-circle icon' aria-hidden='true' data-fa-transform='shrink-9'></i>";
-            }
+      /* If this node has children then we need to print the icon to expand/collapse list. */
+      if ($has_children) {
+        $this->markup .= "<a data-toggle='collapse' role='button' aria-expanded='false' aria-controls='nav-trail-" . $nid . "' href='#nav-trail-" . $nid . "' class='toggle-icon'><span class='sr-only'>Toggle list items.</span><i class='icon fa fa-fw fa-caret-right' aria-hidden='true'></i></a>";
+      }
+      else {
+        $this->markup .= "<i class='far fa-fw fa-circle icon' aria-hidden='true' data-fa-transform='shrink-9'></i>";
+      }
 
-            $this->markup .= "<a href='".$href."' class='nav-link d-inline'>".$title."</a>";
+      $this->markup .= "<a href='" . $href . "' class='nav-link d-inline'>" . $title . "</a>";
 
-            /* If this node has children we need to also put a list inside the current list element. */
-            if ($has_children) {
-                $this->markup .= "<ul id='nav-trail-".$nid."' class='nav-list collapse' >";
-            } else {
-                $this->markup .= "</li>";
-            }
+      /* If this node has children we need to also put a list inside the current list element. */
+      if ($has_children) {
+        $this->markup .= "<ul id='nav-trail-" . $nid . "' class='nav-list collapse' >";
+      }
+      else {
+        $this->markup .= "</li>";
+      }
 
-            $this->depth = $current_depth;
-        } else {
-            $this->bookTreeOutput($node[$key]);
-        }
+      $this->depth = $current_depth;
     }
-
-    public function getCacheContexts() {
-        return Cache::mergeContexts(parent::getCacheContexts(), ['route.book_navigation']);
+    else {
+      $this->bookTreeOutput($tree[$key]);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    return Cache::mergeContexts(parent::getCacheContexts(), ['route.book_navigation']);
+  }
 
 }

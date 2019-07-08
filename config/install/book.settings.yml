@@ -1,8 +1,0 @@
-allowed_types:
-  - book
-  - lesson
-block:
-  navigation:
-    mode: 'all pages'
-    books_displayed: 'all books'
-child_type: lesson
