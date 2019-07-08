@@ -11,7 +11,7 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @Block(
  *   id = "custom_book_navigation",
- *   admin_label = @Translation("Book navigation - Customized"),
+ *   admin_label = @Translation("Book navigation - Collapsible"),
  *   category = @Translation("Menus")
  * )
  */
