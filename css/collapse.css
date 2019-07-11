@@ -2,23 +2,15 @@
  * @file
  * Styling for Collapsing Book Navigation Block(s)
  */
- /*
- .collapse {
-    display: block;
-    max-height: 0px;
-    overflow: hidden;
-    transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
-  }
-  .collapse.show {
-    max-height: 99em;
-    transition: max-height 0.5s ease-in-out;
-  }*/
+ 
 .collapse {
     display: none;
 }
+
 .collapse.show {
     display: block;
 }
+
 .block-collapsing-book-navigation .menu {
     padding-left: 1.25em;
 }
