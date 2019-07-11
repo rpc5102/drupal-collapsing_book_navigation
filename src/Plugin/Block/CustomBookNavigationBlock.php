@@ -199,7 +199,7 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
     if ($access) {
       $tree = $this->bookManager->bookTreeAllData($link['nid']);
 
-      $this->markup .= '<ul id="book-' . $link['nid'] . '" class="nav">';
+      $this->markup .= '<ul id="book-' . $link['nid'] . '" class="menu">';
       $this->bookTreeOutput($tree);
 
       if ($this->depth > 1) {
@@ -250,21 +250,18 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
         $this->markup .= str_repeat("</ul>", $this->depth - $current_depth);
       }
 
-      $this->markup .= "<li class='nav-item' data-id='" . $nid . "'>";
+      $this->markup .= "<li id='menu-id--" . $nid . "' class='menu-item'>";
 
       /* If this node has children then we need to print the icon to expand/collapse list. */
       if ($has_children) {
-        $this->markup .= "<a data-toggle='collapse' role='button' aria-expanded='false' aria-controls='nav-trail-" . $nid . "' href='#nav-trail-" . $nid . "' class='toggle-icon'><span class='sr-only'>Toggle list items.</span><i class='icon fa fa-fw fa-caret-right' aria-hidden='true'></i></a>";
-      }
-      else {
-        $this->markup .= "<i class='far fa-fw fa-circle icon' aria-hidden='true' data-fa-transform='shrink-9'></i>";
+        $this->markup .= "<a data-toggle='collapse' role='button' aria-label='Toggle list items' aria-expanded='false' aria-controls='nav-trail-" . $nid . "' href='#nav-trail-" . $nid . "' class='toggle-icon' tabindex='0'></a>";
       }
 
-      $this->markup .= "<a href='" . $href . "' class='nav-link d-inline'>" . $title . "</a>";
+      $this->markup .= "<a href='" . $href . "' class='menu-link' tabindex='0'>" . $title . "</a>";
 
       /* If this node has children we need to also put a list inside the current list element. */
       if ($has_children) {
-        $this->markup .= "<ul id='nav-trail-" . $nid . "' class='nav-list collapse' >";
+        $this->markup .= "<ul id='nav-trail-" . $nid . "' class='menu-list collapse'>";
       }
       else {
         $this->markup .= "</li>";

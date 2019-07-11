@@ -6,7 +6,7 @@ collapse:
     theme:
       css/collapse.css: {}
   dependencies:
-    - core/jquery
+    - core/drupal
 
 form-actions:
   version: VERSION
@@ -15,5 +15,3 @@ form-actions:
   css:
     component:
       css/form-actions.css: {}
-  dependencies:
-    - core/jquery

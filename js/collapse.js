@@ -1,79 +1,63 @@
 /**
  * @file
- * Collapsing Book Tree block behaviors.
+ * Collapsing Book Navigation Block behaviors.
  */
 
-(function($, Drupal) {
+(function(Drupal) {
   "use strict";
 
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function(){
+    /* On initial page load - expand active menu tree */
+    setTimeout(() => {
+      expandActiveMenu();
 
-    /* Keyboard navigation
-    $(".block-collapsing-book-navigation").on("keydown", function(e) {
-      // keyCodes = [38, 40, 37, 39 : up, down, left, right]
-      var key = e.which;
-      var inFocus = $(document.activeElement);
+      for(let toggleIcon of document.querySelectorAll('.block-collapsing-book-navigation .toggle-icon')){
 
-      // down
-      if (key == 40) {
+        toggleIcon.addEventListener('click', function(evt){
+          evt.preventDefault();
 
+          this.classList.toggle('menu-item--expanded');
+          this.parentElement.getElementsByTagName('ul')[0].classList.toggle('show');
+        });
       }
-    });
-    */
+    }, 100);
 
-    /* @TODO: Count number of tree items and listen for how many get rendered by FontAwesome; trigger when done with active item */
-    setTimeout(function() {
-      expand_active_tree();  
 
-      $(".block-collapsing-book-navigation .toggle-icon").on("click", function() {
-        $(this)
-          .find(".svg-inline--fa")
-          .toggleClass("fa-caret-down")
-          .toggleClass("fa-caret-right");
-      });
-    }, 200); 
-  });
+  }, false);
 
-  function expand_active_tree(){
+  function expandActiveMenu(){
     var nid = drupalSettings.path.currentPath.replace(/node\//, "");
-    var active = document.querySelectorAll('li[data-id="' + nid + '"]');
-
-    $(active)
-      .children(".nav-link")
-      .first()
-      .addClass("active");
-
-    $(active)
-      .children(".toggle-icon")
-      .first()
-      .find(".svg-inline--fa")
-      .toggleClass("fa-caret-down");
+    var rootTrailElement = document.getElementById('menu-id--' + nid);
 
     /* Expand first list under active page */
-    $(active)
-      .children("ul")
-      .first()
-      .addClass("show");
+    rootTrailElement.querySelector('.menu-link').classList.add('active');
+    rootTrailElement.querySelector('.toggle-icon').classList.add('menu-item--expanded');
+    rootTrailElement.querySelector('ul').classList.add('show');
 
     /* Traverse tree until at the top; select list elements along the way. */
-    var parents = $(active).parentsUntil("ul.nav");
+    let parents = traverseActiveTrail(rootTrailElement);
 
     /* For each parent list, add the 'show' class to expand it. */
     for (var i = 0; i < parents.length; i++) {
-      if ($(parents[i]).is("ul")) {
-        $(parents[i]).addClass("show");
+      if (parents[i].nodeName == "UL") {
+        parents[i].classList.add('show');
       } else {
-        var icon = $(parents[i])
-          .find(".toggle-icon")
-          .first();
-
-        $(icon)
-          .find(".svg-inline--fa")
-          .toggleClass("fa-caret-down")
-          .toggleClass("fa-caret-right");
-
-        $(icon)[0].setAttribute("aria-expanded", true);
+        var icon = parents[i].querySelector('.toggle-icon');
+            icon.classList.add('menu-item--expanded');
+            icon.setAttribute("aria-expanded", true);
       }
-    } 
+    }
   }
-})(jQuery, Drupal);
+
+  function traverseActiveTrail(element){
+    let parents = [];
+    let parentBlock = element.closest('.block-collapsing-book-navigation .content');
+
+    while (element.parentElement != parentBlock) {
+      element = element.parentElement;
+      parents.push(element);
+    }
+
+    return parents;
+  }
+})(Drupal);
