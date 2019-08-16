@@ -22,27 +22,31 @@
       }
     }, 100);
 
-
   }, false);
 
   function expandActiveMenu(){
-    var nid = drupalSettings.path.currentPath.replace(/node\//, "");
-    var rootTrailElement = document.getElementById('menu-id--' + nid);
+    let nid = drupalSettings.path.currentPath.replace(/node\//, "");
+    let rootTrailElement = document.getElementById('menu-id--' + nid);
 
     /* Expand first list under active page */
     rootTrailElement.querySelector('.menu-link').classList.add('active');
-    rootTrailElement.querySelector('.toggle-icon').classList.add('menu-item--expanded');
-    rootTrailElement.querySelector('ul').classList.add('show');
+
+    let rootSubtree = rootTrailElement.querySelector('.toggle-icon');
+
+    if(rootSubtree){
+      rootSubtree.classList.add('menu-item--expanded');
+      rootTrailElement.querySelector('ul').classList.add('show');
+    }
 
     /* Traverse tree until at the top; select list elements along the way. */
     let parents = traverseActiveTrail(rootTrailElement);
 
     /* For each parent list, add the 'show' class to expand it. */
-    for (var i = 0; i < parents.length; i++) {
+    for (let i = 0; i < parents.length; i++) {
       if (parents[i].nodeName == "UL") {
         parents[i].classList.add('show');
       } else {
-        var icon = parents[i].querySelector('.toggle-icon');
+        let icon = parents[i].querySelector('.toggle-icon');
             icon.classList.add('menu-item--expanded');
             icon.setAttribute("aria-expanded", true);
       }
