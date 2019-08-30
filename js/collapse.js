@@ -28,27 +28,30 @@
     let nid = drupalSettings.path.currentPath.replace(/node\//, "");
     let rootTrailElement = document.getElementById('menu-id--' + nid);
 
-    /* Expand first list under active page */
-    rootTrailElement.querySelector('.menu-link').classList.add('active');
+    /* If trail is set expand the tree; otherwise no trail is active. */
+    if(rootTrailElement){
+      /* Expand first list under active page */
+      rootTrailElement.querySelector('.menu-link').classList.add('active');
 
-    let rootSubtree = rootTrailElement.querySelector('.toggle-icon');
+      let rootSubtree = rootTrailElement.querySelector('.toggle-icon');
 
-    if(rootSubtree){
-      rootSubtree.classList.add('menu-item--expanded');
-      rootTrailElement.querySelector('ul').classList.add('show');
-    }
+      if(rootSubtree){
+        rootSubtree.classList.add('menu-item--expanded');
+        rootTrailElement.querySelector('ul').classList.add('show');
+      }
 
-    /* Traverse tree until at the top; select list elements along the way. */
-    let parents = traverseActiveTrail(rootTrailElement);
+      /* Traverse tree until at the top; select list elements along the way. */
+      let parents = traverseActiveTrail(rootTrailElement);
 
-    /* For each parent list, add the 'show' class to expand it. */
-    for (let i = 0; i < parents.length; i++) {
-      if (parents[i].nodeName == "UL") {
-        parents[i].classList.add('show');
-      } else {
-        let icon = parents[i].querySelector('.toggle-icon');
-            icon.classList.add('menu-item--expanded');
-            icon.setAttribute("aria-expanded", true);
+      /* For each parent list, add the 'show' class to expand it. */
+      for (let i = 0; i < parents.length; i++) {
+        if (parents[i].nodeName == "UL") {
+          parents[i].classList.add('show');
+        } else {
+          let icon = parents[i].querySelector('.toggle-icon');
+              icon.classList.add('menu-item--expanded');
+              icon.setAttribute("aria-expanded", true);
+        }
       }
     }
   }
