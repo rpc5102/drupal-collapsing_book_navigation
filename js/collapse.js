@@ -11,7 +11,9 @@
     setTimeout(() => {
       expandActiveMenu();
 
-      for(let toggleIcon of document.querySelectorAll('.block-collapsing-book-navigation .toggle-icon')){
+      let toggleIcons = document.querySelectorAll('.block-collapsing-book-navigation .toggle-icon');
+
+      for(let toggleIcon of toggleIcons){
 
         toggleIcon.addEventListener('click', function(evt){
           evt.preventDefault();
