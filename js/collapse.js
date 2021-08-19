@@ -3,7 +3,7 @@
  * Collapsing Book Navigation Block behaviors.
  */
 
-(function(Drupal) {
+ (function(Drupal) {
   "use strict";
 
   document.addEventListener('DOMContentLoaded', function(){
@@ -27,14 +27,16 @@
   }, false);
 
   function expandActiveMenu(){
-    let nid = drupalSettings.path.currentPath.replace(/node\//, "");
-    let rootTrailElement = document.getElementById('menu-id--' + nid);
+    let activeMenuItem = document.querySelector('.book-block-menu .active');
+    let rootTrailElement = activeMenuItem.closest('.menu-root');
 
     /* If trail is set expand the tree; otherwise no trail is active. */
     if(rootTrailElement){
       /* Expand first list under active page */
-      rootTrailElement.querySelector('.menu-link').classList.add('active');
-
+      if(activeMenuItem.previousElementSibling && activeMenuItem.previousElementSibling.tagName == "A") {
+        activeMenuItem.previousElementSibling.classList.add('menu-item--expanded');
+        activeMenuItem.nextElementSibling.classList.add('show');
+      }
       let rootSubtree = rootTrailElement.querySelector('.toggle-icon');
 
       if(rootSubtree){
@@ -43,30 +45,40 @@
       }
 
       /* Traverse tree until at the top; select list elements along the way. */
-      let parents = traverseActiveTrail(rootTrailElement);
+      let parents = traverseActiveTrail(activeMenuItem, '.menu-root');
 
       /* For each parent list, add the 'show' class to expand it. */
       for (let i = 0; i < parents.length; i++) {
         if (parents[i].nodeName == "UL") {
           parents[i].classList.add('show');
-        } else {
+        } else if(parents[i].nodeName == "LI") {
           let icon = parents[i].querySelector('.toggle-icon');
-              icon.classList.add('menu-item--expanded');
-              icon.setAttribute("aria-expanded", true);
+          if(icon) {
+            icon.classList.add('menu-item--expanded');
+            icon.setAttribute("aria-expanded", true);
+          }  
         }
       }
     }
   }
 
-  function traverseActiveTrail(element){
-    let parents = [];
-    let parentBlock = element.closest('.block-collapsing-book-navigation .content');
-
-    while (element.parentElement != parentBlock) {
-      element = element.parentElement;
-      parents.push(element);
+  function traverseActiveTrail(el, selector, filter) {
+    const result = [];
+    const matchesSelector = el.matches || el.webkitMatchesSelector || el.mozMatchesSelector || el.msMatchesSelector;
+  
+    // match start from parent
+    el = el.parentElement;
+    while (el && !matchesSelector.call(el, selector)) {
+      if (!filter) {
+        result.push(el);
+      } else {
+        if (matchesSelector.call(el, filter)) {
+          result.push(el);
+        }
+      }
+      el = el.parentElement;
     }
-
-    return parents;
+    return result;
   }
+
 })(Drupal);

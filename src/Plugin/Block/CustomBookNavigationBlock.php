@@ -2,9 +2,15 @@
 
 namespace Drupal\collapsing_book_navigation\Plugin\Block;
 
-use Drupal\book\Plugin\Block\BookNavigationBlock;
+use Drupal\Core\Block\BlockBase;
+use Drupal\book\BookManagerInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\node\NodeInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * Provides a 'Book navigation' block.
@@ -15,21 +21,66 @@ use Drupal\Core\Form\FormStateInterface;
  *   category = @Translation("Menus")
  * )
  */
-class CustomBookNavigationBlock extends BookNavigationBlock {
+class CustomBookNavigationBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Book tree depth.
+   * The current route match.
    *
-   * @var int
+   * @var \Drupal\Core\Routing\RouteMatchInterface
    */
-  private $depth = 1;
+  protected $routeMatch;
 
   /**
-   * Block #markup render string.
+   * The book manager.
    *
-   * @var string
+   * @var \Drupal\book\BookManagerInterface
    */
-  private $markup = '';
+  protected $bookManager;
+
+  /**
+   * The node storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $nodeStorage;
+
+  /**
+   * Constructs a new BookNavigationBlock instance.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
+   * @param \Drupal\book\BookManagerInterface $book_manager
+   *   The book manager.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $node_storage
+   *   The node storage.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, BookManagerInterface $book_manager, EntityStorageInterface $node_storage) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    $this->routeMatch = $route_match;
+    $this->bookManager = $book_manager;
+    $this->nodeStorage = $node_storage;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('current_route_match'),
+      $container->get('book.manager'),
+      $container->get('entity_type.manager')->getStorage('node')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -45,25 +96,19 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
    * {@inheritdoc}
    */
   public function blockForm($form, FormStateInterface $form_state) {
-
     $form['#attached']['library'][] = 'collapsing_book_navigation/form-actions';
 
-    /* Form Part 1 - Page Selection */
     $options = [
       'all pages' => $this->t('Show block on all pages'),
       'book pages' => $this->t('Show block only on book pages'),
     ];
-
     $form['book_block_mode'] = [
       '#type' => 'radios',
       '#title' => $this->t('Book navigation block display'),
       '#options' => $options,
       '#default_value' => $this->configuration['block_mode'],
       '#description' => $this->t("If <em>Show block on all pages</em> is selected, the block will contain the automatically generated menus for all of the site's books. If <em>Show block only on book pages</em> is selected, the block will contain only the one menu corresponding to the current page's book. In this case, if the current page is not in a book, no block will be displayed. The <em>Page specific visibility settings</em> or other visibility settings can be used in addition to selectively display this block."),
-    ];
-
-    /* Form Part 2 - Book Selection */
-    // @todo: add a way to handle lots of list choices
+      ];
 
     unset($options);
 
@@ -140,20 +185,15 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
   public function build() {
     $current_bid = 0;
 
-    $block_mode = $this->configuration['block_mode'];
-
-    if ($node = $this->requestStack->getCurrentRequest()->get('node')) {
-      $current_bid = empty($node->book['bid']) ? 0 : $node->book['bid'];
+    $node = $this->routeMatch->getParameter('node');
+    
+    if ($node instanceof NodeInterface && !empty($node->book['bid'])) {
+      $current_bid = $node->book['bid'];
     }
+    if ($this->configuration['block_mode'] == 'all pages') {
+      $book_menus = [];
 
-    /*
-     * Display block if:
-     *  mode set to 'all pages' or
-     *  mode set to 'book pages' with the current node being part of a book.
-     */
-    if ($block_mode === 'all pages' || ($block_mode === 'book pages' && $current_bid)) {
       $books = $this->bookManager->getAllBooks();
-
       $books_to_display = $this->configuration['books_displayed'];
 
       if ($books_to_display === 'all books') {
@@ -163,115 +203,49 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
       if (!$books_to_display) {
         return;
       }
-      elseif (gettype($books_to_display) === 'array') {
-        foreach ($books as $bid => $book) {
-          if (array_search($bid, array_keys($books_to_display)) === FALSE) {
-            unset($books[$bid]);
-          }
+      
+      foreach ($books as $book_id => $book) {
+        if (array_search($book_id, array_keys($books_to_display)) !== FALSE) {
+          $book_node = $this->nodeStorage->load($book['nid']);
+          $data = $this->bookManager->bookTreeAllData($book_node->book['bid'], $book_node->book); 
+
+          $data[key($data)]['link']['access'] = $book_node->access('view');
+
+          $book_menus[$book_id] = $this->bookManager->bookTreeOutput($data);
+
+          $book_menus[$book_id] += [
+            '#book_title' => $book['title'],
+          ];
         }
+      }
+      if ($book_menus) {
+        //kint($book_menus);
+        return [
+          '#theme' => 'book_all_books_block',
+        ] + $book_menus;
+      }
+    }
+    elseif ($current_bid) {
+      // Only display this block when the user is browsing a book and do
+      // not show unpublished books.
+      $nid = \Drupal::entityQuery('node')
+        ->accessCheck(TRUE)
+        ->condition('nid', $node->book['bid'], '=')
+        ->condition('status', NodeInterface::PUBLISHED)
+        ->execute();
 
-        uasort($books, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
-
-        foreach ($books as $book) {
-          $this->buildBookTree($book);
+      // Only show the block if the user has view access for the top-level node.
+      if ($nid) {
+        $tree = $this->bookManager->bookTreeAllData($node->book['bid'], $node->book);
+        // There should only be one element at the top level.
+        $data = array_shift($tree);
+        $below = $this->bookManager->bookTreeOutput($data['below']);
+        if (!empty($below)) {
+          return $below;
         }
       }
     }
-    return [
-      '#markup' => $this->markup,
-      '#cache' => [
-        'contexts' => $this->getCacheContexts(),
-      ],
-    ];
-  }
-
-  /**
-   * Builds #markup render string for provided book link.
-   *
-   * @param array $link
-   *   A book link.
-   */
-  private function buildBookTree(array $link) {
-    $access = \Drupal::entityQuery('node')
-      ->condition('nid', $link['nid'], '=')
-      ->execute();
-
-    if ($access) {
-      $tree = $this->bookManager->bookTreeAllData($link['nid']);
-
-      $this->markup .= '<ul id="book-' . $link['nid'] . '" class="menu">';
-      $this->bookTreeOutput($tree);
-
-      if ($this->depth > 1) {
-        $this->markup .= str_repeat("</ul></li>", $this->depth - 1);
-      }
-
-      $this->markup .= '</ul>';
-
-      $this->depth = 1;
-    }
-  }
-
-  /**
-   * Iterates through book tree to find and render all leaves.
-   *
-   * @param array $tree
-   *   A tree of menu links.
-   */
-  private function bookTreeOutput(array $tree) {
-    foreach ($tree as $key => $value) {
-      $this->bookNodeOutput($tree, $key);
-    }
-  }
-
-  /**
-   * Provides render string for subtree items.
-   *
-   * @param array $tree
-   *   A tree of menu links.
-   * @param string|int $key
-   *   Current subtree index.
-   */
-  private function bookNodeOutput(array $tree, $key) {
-    /* Check if current key is a link, otherwise, go deeper [below]. */
-    if ($key == "link") {
-      $current_depth = $tree[$key]['depth'];
-      $has_children = $tree[$key]['has_children'];
-      $title = $tree[$key]['title'];
-      $nid = $tree[$key]['nid'];
-      $active = $tree[$key]['in_active_trail'];
-
-      /* Get link for current item. */
-      $href = rtrim(base_path(), '/') . \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $nid);
-
-      /* Check if we've moved up any levels; close tags if needed. */
-      if ($current_depth < $this->depth) {
-        $this->markup .= "</li>";
-        $this->markup .= str_repeat("</ul>", $this->depth - $current_depth);
-      }
-
-      $this->markup .= "<li id='menu-id--" . $nid . "' class='menu-item'>";
-
-      /* If this node has children then we need to print the icon to expand/collapse list. */
-      if ($has_children) {
-        $this->markup .= "<a role='button' aria-label='Toggle list items' aria-expanded='false' aria-controls='nav-trail-" . $nid . "' href='#nav-trail-" . $nid . "' class='toggle-icon' tabindex='0'></a>";
-      }
-
-      $this->markup .= "<a href='" . $href . "' class='menu-link' tabindex='0'>" . $title . "</a>";
-
-      /* If this node has children we need to also put a list inside the current list element. */
-      if ($has_children) {
-        $this->markup .= "<ul id='nav-trail-" . $nid . "' class='menu-list collapse'>";
-      }
-      else {
-        $this->markup .= "</li>";
-      }
-
-      $this->depth = $current_depth;
-    }
-    else {
-      $this->bookTreeOutput($tree[$key]);
-    }
+    return [];
   }
 
   /**
@@ -279,6 +253,15 @@ class CustomBookNavigationBlock extends BookNavigationBlock {
    */
   public function getCacheContexts() {
     return Cache::mergeContexts(parent::getCacheContexts(), ['route.book_navigation']);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @todo Make cacheable in https://www.drupal.org/node/2483181
+   */
+  public function getCacheMaxAge() {
+    return 0;
   }
 
 }

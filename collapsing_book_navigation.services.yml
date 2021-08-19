@@ -1,0 +1,4 @@
+services:
+  collapsing_book_manager:
+    class: Drupal\collapsing_book_navigation\Service\CollapsingBookManager
+    arguments: []
