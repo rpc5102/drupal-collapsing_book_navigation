@@ -37,6 +37,7 @@
 
 .block-collapsing-book-navigation .menu-list, .block-collapsing-book-navigation .toggle-icon ~ .menu-link {
     margin-left: 0.25rem;
+    list-style: none;
 }
 
 .block-collapsing-book-navigation .menu-link {
