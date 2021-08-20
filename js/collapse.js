@@ -28,6 +28,8 @@
 
   function expandActiveMenu(){
     let activeMenuItem = document.querySelector('.book-block-menu .active');
+   
+    if(activeMenuItem){
     let rootTrailElement = activeMenuItem.closest('.menu-root');
 
     /* If trail is set expand the tree; otherwise no trail is active. */
@@ -59,6 +61,7 @@
           }  
         }
       }
+    }
     }
   }
 
