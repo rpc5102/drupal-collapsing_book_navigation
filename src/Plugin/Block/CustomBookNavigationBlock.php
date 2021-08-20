@@ -194,6 +194,7 @@ class CustomBookNavigationBlock extends BlockBase implements ContainerFactoryPlu
       $book_menus = [];
 
       $books = $this->bookManager->getAllBooks();
+      uasort($books, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
       $books_to_display = $this->configuration['books_displayed'];
 
       if ($books_to_display === 'all books') {
