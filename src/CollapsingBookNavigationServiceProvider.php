@@ -19,7 +19,6 @@ class CollapsingBookNavigationServiceProvider extends ServiceProviderBase implem
   public function alter(ContainerBuilder $container) {
     $definition = $container->getDefinition('book.manager');
     $definition->setClass('Drupal\collapsing_book_navigation\CollapsingBookManager');
-    print("collapsing_book_navigation");
   }
 
   
