@@ -13,6 +13,7 @@
     max-height: 99em;
     transition: max-height 0.5s ease-in-out;
   }*/
+
 .collapse {
     display: none;
 }
@@ -25,6 +26,11 @@
     margin-left: -6px;
 }
 
+
+.block-collapsing-book-navigation .menu-root {
+    margin-bottom: 0.4rem; 
+}
+ 
 .block-collapsing-book-navigation .menu {
     padding-left: 0.25rem;
     margin-bottom: 0.25rem;
