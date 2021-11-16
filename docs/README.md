@@ -4,6 +4,8 @@ Collapsing Book Navigation 9.x-1.1
 ### About this Module
 Converts the standard page-rendered **Book Navigation** block into a fully collapsible tree menu.
 
+<img src="https://raw.githubusercontent.com/rpc5102/drupal-collapsing_book_navigation/master/docs/comparison.png" width="600">
+
 ### Goals
 Provide users with a method to easily traverse large/complex book structures.
 
@@ -24,4 +26,4 @@ The default `[Block Region]` in Bartik is *sidebar_first*.
 ### Additional Features
 This module also supports the ability to create *one* or *many* block regions for books as well as filter out the books to be displayed in each region. Configure block to see a new *Book Selection* list.
 
-![Book Selection](book-selection.png?raw=true "Book Selection")
+<img src="https://raw.githubusercontent.com/rpc5102/drupal-collapsing_book_navigation/master/docs/book-selection.png" width="350">
