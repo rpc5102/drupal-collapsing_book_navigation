@@ -11,3 +11,24 @@
 function collapsing_book_navigation_page_attachments(array &$attachments) {
   $attachments['#attached']['library'][] = 'collapsing_book_navigation/collapse';
 }
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function collapsing_book_navigation_theme_registry_alter(&$theme_registry) {
+  $template_uri = drupal_get_path('module', 'collapsing_book_navigation') . '/templates';
+  
+  foreach ([
+    'book_all_books_block',
+    'book_tree'
+  ] as $template_name) {
+    $base = explode('__', $template_name);
+    $base = array_shift($base);
+    if (empty($theme_registry[$base])) {
+      continue;
+    }
+    $theme_registry[$template_name] = $theme_registry[$base];
+    $theme_registry[$template_name]['template'] = str_replace('_', '-', $template_name);
+    $theme_registry[$template_name]['path'] = $template_uri;
+  }
+}

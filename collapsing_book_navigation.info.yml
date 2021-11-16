@@ -2,7 +2,7 @@ name: Collapsing Book Navigation
 description: 'Displays a filterable list of book trees in a block. Replaces the default book navigation block.'
 package: Books
 type: module
-version: '8.x-1.9'
+version: '9.x-1.1'
 dependencies:
   - 'drupal:book'
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9

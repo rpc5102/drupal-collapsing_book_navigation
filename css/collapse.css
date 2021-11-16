@@ -2,59 +2,76 @@
  * @file
  * Styling for Collapsing Book Navigation Block(s)
  */
- 
+
 .collapse {
-    display: none;
+  display: none;
 }
 
 .collapse.show {
-    display: block;
+  display: block;
+}
+
+.book-block-menu {
+  margin-left: -6px;
 }
 
 .block-collapsing-book-navigation .menu {
-    padding-left: 1.25em;
+  padding-left: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.block-collapsing-book-navigation .menu-root {
+  padding-bottom: 0;
 }
 
 .block-collapsing-book-navigation .menu-item {
-    list-style-type: none;
+  list-style-image: none;
+  list-style-type: none;
 }
 
-.block-collapsing-book-navigation .menu-list, .block-collapsing-book-navigation .toggle-icon ~ .menu-link {
-    margin-left: 0.25em;
+.block-collapsing-book-navigation .menu-list {
+  list-style: none;
+}
+
+.block-collapsing-book-navigation .toggle-icon ~ .menu-link {
+  margin-left: 0;
 }
 
 .block-collapsing-book-navigation .menu-link {
-    margin-left: -1em;
+  margin-left: -1rem;
 }
 
 .block-collapsing-book-navigation .menu-link.active {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .block-collapsing-book-navigation .toggle-icon {
-    margin-left: calc(-1em + 1px);
+  margin-left: calc(-1rem + 0.0625rem);
 }
 
 .block-collapsing-book-navigation .toggle-icon, .block-collapsing-book-navigation .toggle-icon:hover, .toggle-icon:active, .block-collapsing-book-navigation .toggle-icon:focus {
-    text-decoration: none;
-    border-bottom: none;
+  text-decoration: none;
+  border-bottom: none;
 }
 
-.block-collapsing-book-navigation .toggle-icon.menu-item--expanded::before {
-    transform: rotate(90deg) translateY(-2px);
-}
-
+/* ▸ */
 .block-collapsing-book-navigation .toggle-icon::before {
-    content: '\25B8'; /* ▸ */
-    display: inline-block;
-    margin-right: 0.5em;
-    font-size: 1.1em;
+  content: '\25B8'; /* ▸ */
+  display: inline-block;
+  margin-right: 0.5em;
+  font-size: 1.1em;
 }
 
-.block-collapsing-book-navigation .menu-item .menu-link:first-child::before {
-    content: '\25CB'; /* ○ */
-    margin-left: calc(-1em + 2px);
-    margin-right: calc(2em - 2px);
-    float: left;
-    color: initial;
+/* ▾ */
+.block-collapsing-book-navigation .toggle-icon.menu-item--expanded::before {
+  transform: rotate(90deg) translateY(-2px);
+}
+
+/* ○ */
+.block-collapsing-book-navigation .menu-link:first-child::before {
+  content: '\25CB';
+  margin-left: calc(-1em + 2px);
+  margin-right: calc(2em - 2px);
+  float: left;
+  color: initial;
 }
