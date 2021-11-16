@@ -1,4 +1,4 @@
-Collapsing Book Navigation 8.x-1.8
+Collapsing Book Navigation 9.x-1.1
 ---------------
 
 ### About this Module
@@ -22,4 +22,4 @@ Enable this block in:
 The default `[Block Region]` in Bartik is *sidebar_first*.
 
 ### Additional Features
-This module also supports the ability to create *one* or *many* block regions for books as well as filter out the books to be displayed in each region.
+This module also supports the ability to create *one* or *many* block regions for books as well as filter out the books to be displayed in each region. Configure block to see a new *Book Selection* list.
