@@ -4,7 +4,7 @@ Collapsing Book Navigation 9.x-1.1
 ### About this Module
 Converts the standard page-rendered **Book Navigation** block into a fully collapsible tree menu.
 
-<img src="https://raw.githubusercontent.com/rpc5102/drupal-collapsing_book_navigation/master/docs/comparison.png" width="600">
+<img src="https://raw.githubusercontent.com/rpc5102/drupal-collapsing_book_navigation/master/docs/comparison.png" width="300">
 
 ### Goals
 Provide users with a method to easily traverse large/complex book structures.
