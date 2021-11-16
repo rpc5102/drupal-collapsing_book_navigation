@@ -5,21 +5,9 @@ collapse:
   css:
     theme:
       css/collapse.css: {}
-      css/default-icons.css: {}
   dependencies:
     - core/drupal
-
-fontawesome-collapse:
-  version: VERSION
-  js:
-    js/collapse.js:  {}
-  css:
-    theme:
-      css/collapse.css: {}
-      css/fontawesome-icons.css: {}
-  dependencies:
-    - core/drupal
-
+    
 form-actions:
   version: VERSION
   js:
