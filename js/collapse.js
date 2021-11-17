@@ -26,41 +26,43 @@
   }, false);
 
   function expandActiveMenu(){
-    let activeMenuItem = document.querySelector('.book-block-menu .active');
+    let activeMenuItems = document.querySelectorAll('.book-block-menu .active');
    
-    if(activeMenuItem){
-    let rootTrailElement = activeMenuItem.closest('.menu-root');
+    if(activeMenuItems){
+      for(let activeMenuItem of activeMenuItems) {
+        let rootTrailElement = activeMenuItem.closest('.menu-root');
 
-    /* If trail is set expand the tree; otherwise no trail is active. */
-    if(rootTrailElement){
-      /* Expand first list under active page */
-      if(activeMenuItem.previousElementSibling && activeMenuItem.previousElementSibling.tagName == "A") {
-        activeMenuItem.previousElementSibling.classList.add('menu-item--expanded');
-        activeMenuItem.nextElementSibling.classList.add('show');
-      }
-      let rootSubtree = rootTrailElement.querySelector('.toggle-icon');
+        /* If trail is set expand the tree; otherwise no trail is active. */
+        if(rootTrailElement){
+          /* Expand first list under active page */
+          if(activeMenuItem.previousElementSibling && activeMenuItem.previousElementSibling.tagName == "A") {
+            activeMenuItem.previousElementSibling.classList.add('menu-item--expanded');
+            activeMenuItem.nextElementSibling.classList.add('show');
+          }
+          let rootSubtree = rootTrailElement.querySelector('.toggle-icon');
 
-      if(rootSubtree){
-        rootSubtree.classList.add('menu-item--expanded');
-        rootTrailElement.querySelector('ul').classList.add('show');
-      }
+          if(rootSubtree){
+            rootSubtree.classList.add('menu-item--expanded');
+            rootTrailElement.querySelector('ul').classList.add('show');
+          }
 
-      /* Traverse tree until at the top; select list elements along the way. */
-      let parents = traverseActiveTrail(activeMenuItem, '.menu-root');
+          /* Traverse tree until at the top; select list elements along the way. */
+          let parents = traverseActiveTrail(activeMenuItem, '.menu-root');
 
-      /* For each parent list, add the 'show' class to expand it. */
-      for (let i = 0; i < parents.length; i++) {
-        if (parents[i].nodeName == "UL") {
-          parents[i].classList.add('show');
-        } else if(parents[i].nodeName == "LI") {
-          let icon = parents[i].querySelector('.toggle-icon');
-          if(icon) {
-            icon.classList.add('menu-item--expanded');
-            icon.setAttribute("aria-expanded", true);
-          }  
+          /* For each parent list, add the 'show' class to expand it. */
+          for (let i = 0; i < parents.length; i++) {
+            if (parents[i].nodeName == "UL") {
+              parents[i].classList.add('show');
+            } else if(parents[i].nodeName == "LI") {
+              let icon = parents[i].querySelector('.toggle-icon');
+              if(icon) {
+                icon.classList.add('menu-item--expanded');
+                icon.setAttribute("aria-expanded", true);
+              }  
+            }
+          }
         }
       }
-    }
     }
   }
 
